@@ -14,11 +14,9 @@ import wandb
 from mpi4py import MPI
 
 # add the FedML root directory to the python path
-sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "./../../../../")))
-sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "./../../../")))
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "")))
-from fedml_api.distributed.utils.gpu_mapping import mapping_processes_to_gpu_device_from_yaml_file
+sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../")))
+
 from fedml_api.data_preprocessing.FederatedEMNIST.data_loader import load_partition_data_federated_emnist
 from fedml_api.data_preprocessing.fed_cifar100.data_loader import load_partition_data_federated_cifar100
 from fedml_api.data_preprocessing.fed_shakespeare.data_loader import load_partition_data_federated_shakespeare
@@ -78,9 +76,6 @@ def add_args(parser):
     parser.add_argument('--client_optimizer', type=str, default='adam',
                         help='SGD with momentum; adam')
 
-    parser.add_argument('--backend', type=str, default="MPI",
-                        help='Backend for Server and Client')
-
     parser.add_argument('--lr', type=float, default=0.001, metavar='LR',
                         help='learning rate (default: 0.001)')
 
@@ -92,7 +87,7 @@ def add_args(parser):
     parser.add_argument('--comm_round', type=int, default=10,
                         help='how many round of communications we shoud use')
 
-    parser.add_argument('--is_mobile', type=int, default=1,
+    parser.add_argument('--is_mobile', type=int, default=0,
                         help='whether the program is running on the FedML-Mobile server side')
 
     parser.add_argument('--frequency_of_the_test', type=int, default=1,
@@ -103,16 +98,6 @@ def add_args(parser):
 
     parser.add_argument('--gpu_num_per_server', type=int, default=4,
                         help='gpu_num_per_server')
-
-    parser.add_argument('--gpu_mapping_file', type=str, default="gpu_mapping.yaml",
-                        help='the gpu utilization file for servers and clients. If there is no \
-                        gpu_util_file, gpu will not be used.')
-
-    parser.add_argument('--gpu_mapping_key', type=str, default="mapping_default",
-                        help='the key in gpu utilization file')
-
-    parser.add_argument('--grpc_ipconfig_path', type=str, default="grpc_ipconfig.csv",
-                        help='config table containing ipv4 address of grpc server')
 
     parser.add_argument('--ci', type=int, default=0,
                         help='CI')
@@ -267,11 +252,23 @@ def create_model(args, model_name, output_dim):
     return model
 
 
-if __name__ == "__main__":
-    # quick fix for issue in MacOS environment: https://github.com/openai/spinningup/issues/16
-    if sys.platform == 'darwin':
-        os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
+def init_training_device(process_ID, fl_worker_num, gpu_num_per_machine):
+    # initialize the mapping from process ID to GPU ID: <process ID, GPU ID>
+    if process_ID == 0:
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        return device
+    process_gpu_dict = dict()
+    for client_index in range(fl_worker_num):
+        gpu_index = client_index % gpu_num_per_machine
+        process_gpu_dict[client_index] = gpu_index
 
+    logging.info(process_gpu_dict)
+    device = torch.device("cuda:" + str(process_gpu_dict[process_ID - 1]) if torch.cuda.is_available() else "cpu")
+    logging.info(device)
+    return device
+
+
+if __name__ == "__main__":
     # initialize distributed computing (MPI)
     comm, process_id, worker_number = FedML_init()
 
@@ -315,9 +312,17 @@ if __name__ == "__main__":
     torch.manual_seed(0)
     torch.cuda.manual_seed_all(0)
 
-    # Please check "GPU_MAPPING.md" to see how to define the topology
+    # GPU arrangement: Please customize this function according your own topology.
+    # The GPU server list is configured at "mpi_host_file".
+    # If we have 4 machines and each has two GPUs, and your FL network has 8 workers and a central worker.
+    # The 4 machines will be assigned as follows:
+    # machine 1: worker0, worker4, worker8;
+    # machine 2: worker1, worker5;
+    # machine 3: worker2, worker6;
+    # machine 4: worker3, worker7;
+    # Therefore, we can see that workers are assigned according to the order of machine list.
     logging.info("process_id = %d, size = %d" % (process_id, worker_number))
-    device = mapping_processes_to_gpu_device_from_yaml_file(process_id, worker_number, args.gpu_mapping_file, args.gpu_mapping_key)
+    device = init_training_device(process_id, worker_number - 1, args.gpu_num_per_server)
 
     # load data
     dataset = load_data(args, args.dataset)
@@ -329,12 +334,12 @@ if __name__ == "__main__":
     # In this case, please use our FedML distributed version (./fedml_experiments/distributed_fedavg)
     model = create_model(args, model_name=args.model, output_dim=dataset[7])
 
-    # try:
+    try:
         # start "federated averaging (FedAvg)"
-    FedML_FedAvg_distributed(process_id, worker_number, device, comm,
-                             model, train_data_num, train_data_global, test_data_global,
-                             train_data_local_num_dict, train_data_local_dict, test_data_local_dict, args)
-    # except Exception as e:
-    #     print(e)
-    #     logging.info('traceback.format_exc():\n%s' % traceback.format_exc())
-    #     MPI.COMM_WORLD.Abort()
+        FedML_FedAvg_distributed(process_id, worker_number, device, comm,
+                                 model, train_data_num, train_data_global, test_data_global,
+                                 train_data_local_num_dict, train_data_local_dict, test_data_local_dict, args)
+    except Exception as e:
+        print(e)
+        logging.info('traceback.format_exc():\n%s' % traceback.format_exc())
+        MPI.COMM_WORLD.Abort()
