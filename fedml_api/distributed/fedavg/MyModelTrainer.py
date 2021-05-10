@@ -3,6 +3,7 @@ import logging
 import torch
 from torch import nn
 import time
+import wandb
 
 try:
     from fedml_core.trainer.model_trainer import ModelTrainer
