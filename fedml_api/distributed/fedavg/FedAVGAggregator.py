@@ -29,6 +29,9 @@ class FedAVGAggregator(object):
         self.model_dict = dict()
         self.sample_num_dict = dict()
         self.flag_client_model_uploaded_dict = dict()
+        
+        self.starttime = -1 #add for log train time, by yyh
+        
         for idx in range(self.worker_num):
             self.flag_client_model_uploaded_dict[idx] = False
 
@@ -94,6 +97,8 @@ class FedAVGAggregator(object):
         return client_indexes
 
     def test_on_server_for_all_clients(self, round_idx):
+        if self.starttime == -1:
+            self.starttime = time.time()
         if round_idx % self.args.frequency_of_the_test == 0 or round_idx == self.args.comm_round - 1:
             logging.info("################test_on_server_for_all_clients : {}".format(round_idx))
             train_num_samples = []
@@ -140,3 +145,5 @@ class FedAVGAggregator(object):
             wandb.log({"Test/Loss": test_loss, "round": round_idx})
             stats = {'test_acc': test_acc, 'test_loss': test_loss}
             logging.info(stats)
+            
+            wandb.log({"Time": time.time() - self.starttime, "round": round_idx})
