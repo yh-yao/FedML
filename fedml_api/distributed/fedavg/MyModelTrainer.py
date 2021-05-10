@@ -2,6 +2,7 @@ import logging
 
 import torch
 from torch import nn
+import time
 
 try:
     from fedml_core.trainer.model_trainer import ModelTrainer
@@ -11,7 +12,8 @@ except ImportError:
 
 class MyModelTrainer(ModelTrainer):
     
-    self.total_epoch = 0
+    total_epoch = 0
+    time = time.time()
     
     def get_model_params(self):
         return self.model.cpu().state_dict()
@@ -20,6 +22,8 @@ class MyModelTrainer(ModelTrainer):
         self.model.load_state_dict(model_parameters)
 
     def train(self, train_data, device, args):
+        
+
         model = self.model
 
         model.to(device)
@@ -51,6 +55,9 @@ class MyModelTrainer(ModelTrainer):
                                                                                               sum(epoch_loss) / len(
                                                                                                   epoch_loss)))
                 wandb.log({"Train/loss": sum(epoch_loss) / len(epoch_loss), "total epoch": self.total_epoch})
+                
+                wandb.log({"Time": time.time() - self.time, "total epoch": self.total_epoch})
+                
             self.total_epoch += 1
                 
                 
