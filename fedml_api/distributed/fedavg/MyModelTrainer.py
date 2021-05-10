@@ -10,6 +10,9 @@ except ImportError:
 
 
 class MyModelTrainer(ModelTrainer):
+    
+    self.total_epoch = 0
+    
     def get_model_params(self):
         return self.model.cpu().state_dict()
 
@@ -47,6 +50,11 @@ class MyModelTrainer(ModelTrainer):
                                                                                               epoch,
                                                                                               sum(epoch_loss) / len(
                                                                                                   epoch_loss)))
+                wandb.log({"Train/loss": sum(epoch_loss) / len(epoch_loss), "total epoch": self.total_epoch})
+            self.total_epoch += 1
+                
+                
+                
 
     def test(self, test_data, device, args):
         model = self.model
