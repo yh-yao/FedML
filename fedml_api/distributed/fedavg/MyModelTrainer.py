@@ -42,6 +42,9 @@ class MyModelTrainer(ModelTrainer):
             batch_loss = []
             for batch_idx, (x, labels) in enumerate(train_data):
                 # logging.info(images.shape)
+                if args.model == 'rnn':
+                    x = torch.LongTensor(x.numpy())
+                    labels = torch.LongTensor(labels.numpy())
                 x, labels = x.to(device), labels.to(device)
                 optimizer.zero_grad()
                 log_probs = model(x)
