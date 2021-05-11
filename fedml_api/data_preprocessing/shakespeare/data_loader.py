@@ -87,9 +87,10 @@ def batch_data(data, batch_size):
     return batch_data
 
 
-def load_partition_data_shakespeare(batch_size):
-    train_path = "../../../data/shakespeare/train"
-    test_path = "../../../data/shakespeare/test"
+def load_partition_data_shakespeare(batch_size,
+                                    train_path = "./../../../data/shakespeare/train/",
+                                    test_path = "./../../../data/shakespeare/test/"):
+    
     users, groups, train_data, test_data = read_data(train_path, test_path)
 
     if len(groups) == 0:
