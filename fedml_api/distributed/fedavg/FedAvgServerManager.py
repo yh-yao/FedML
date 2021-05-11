@@ -14,7 +14,8 @@ except ImportError:
     from FedML.fedml_core.distributed.communication.message import Message
     from FedML.fedml_core.distributed.server.server_manager import ServerManager
 
-
+import time
+    
 class FedAVGServerManager(ServerManager):
     def __init__(self, args, aggregator, comm=None, rank=0, size=0, backend="MPI", is_preprocessed=False):
         super().__init__(args, comm, rank, size, backend)
@@ -83,7 +84,7 @@ class FedAVGServerManager(ServerManager):
 
     def send_message_sync_model_to_client(self, receive_id, global_model_params, client_index):
         logging.info("send_message_sync_model_to_client. receive_id = %d" % receive_id)
-        start_time = time.time()
+        start_time = time.time() #remember to import time
         message = Message(MyMessage.MSG_TYPE_S2C_SYNC_MODEL_TO_CLIENT, self.get_sender_id(), receive_id)
         message.add_params(MyMessage.MSG_ARG_KEY_MODEL_PARAMS, global_model_params)
         message.add_params(MyMessage.MSG_ARG_KEY_CLIENT_INDEX, str(client_index))
