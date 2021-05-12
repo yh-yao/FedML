@@ -68,10 +68,16 @@ class FedProxServerManager(ServerManager):
                     client_indexes = [self.round_idx] * self.args.client_num_per_round
                 else:
                     client_indexes = self.preprocessed_client_lists[self.round_idx]
-            else:
-                # sampling clients
-                client_indexes = self.aggregator.client_sampling(self.round_idx, self.args.client_num_in_total,
-                                                                 self.args.client_num_per_round)
+                print('indexes of clients: ' + str(client_indexes))
+            else: #for non-iid
+                client_indexes = []
+                for j in range(int(self.args.client_num_per_round)):
+                    
+                    client_indexes.append(int((int(self.round_idx) * 10 + random.randint(j*2,j*2+1)) % 1000))
+                print('indexes of clients: ' + str(client_indexes))
+                # # sampling clients
+                #client_indexes = self.aggregator.client_sampling(self.round_idx, self.args.client_num_in_total,
+                #     
 
             print('indexes of clients: ' + str(client_indexes))
             print("size = %d" % self.size)

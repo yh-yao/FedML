@@ -17,7 +17,7 @@ except ImportError:
 import time
 
 class FedOptServerManager(ServerManager):
-    def __init__(self, args, aggregator, comm=None, rank=0, size=0, backend="MPI"):
+    def __init__(self, args, aggregator, comm=None, rank=0, size=0, backend="MPI", is_preprocessed=False):
         super().__init__(args, comm, rank, size, backend)
         self.args = args
         self.aggregator = aggregator
@@ -62,8 +62,20 @@ class FedOptServerManager(ServerManager):
                 return
 
             # sampling clients
-            client_indexes = self.aggregator.client_sampling(self.round_idx, self.args.client_num_in_total,
-                                                             self.args.client_num_per_round)
+            if self.is_preprocessed:
+                # sampling has already been done in data preprocessor
+                client_indexes = [self.round_idx] * self.args.client_num_per_round
+                print('indexes of clients: ' + str(client_indexes))
+            else: #for non-iid
+                client_indexes = []
+                for j in range(int(self.args.client_num_per_round)):
+                    
+                    client_indexes.append(int((int(self.round_idx) * 10 + random.randint(j*2,j*2+1)) % 1000))
+                print('indexes of clients: ' + str(client_indexes))
+                # # sampling clients
+                #client_indexes = self.aggregator.client_sampling(self.round_idx, self.args.client_num_in_total,
+                #                                                 self.args.client_num_per_round)
+                
             print("size = %d" % self.size)
             if self.args.is_mobile == 1:
                 print("transform_tensor_to_list")

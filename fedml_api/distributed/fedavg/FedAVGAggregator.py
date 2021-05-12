@@ -131,12 +131,17 @@ class FedAVGAggregator(object):
             test_num_samples = []
             test_tot_corrects = []
             test_losses = []
-            metrics = self.trainer.test(self.test_global, self.device, self.args)
-            test_tot_correct, test_num_sample, test_loss = metrics['test_correct'], metrics['test_total'], metrics[
-                'test_loss']
-            test_tot_corrects.append(copy.deepcopy(test_tot_correct))
-            test_num_samples.append(copy.deepcopy(test_num_sample))
-            test_losses.append(copy.deepcopy(test_loss))
+            
+            for client_idx in range(self.args.client_num_in_total):
+                # train data
+                metrics = self.trainer.test(self.test_data_local_dict[client_idx], self.device, self.args)
+                test_tot_correct, test_num_sample, test_loss = metrics['test_correct'], metrics['test_total'], metrics['test_loss']
+                test_tot_corrects.append(copy.deepcopy(test_tot_correct))
+                test_num_samples.append(copy.deepcopy(test_num_sample))
+                test_losses.append(copy.deepcopy(test_loss))
+
+                if self.args.ci == 1:
+                    break
 
             # test on test dataset
             test_acc = sum(test_tot_corrects) / sum(test_num_samples)

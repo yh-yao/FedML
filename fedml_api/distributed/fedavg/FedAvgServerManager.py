@@ -62,16 +62,20 @@ class FedAVGServerManager(ServerManager):
                 # sampling has already been done in data preprocessor
                 client_indexes = [self.round_idx] * self.args.client_num_per_round
                 print('indexes of clients: ' + str(client_indexes))
-            else:
+            else: #for non-iid
+                client_indexes = []
+                for j in range(int(self.args.client_num_per_round)):
+                    
+                    client_indexes.append(int((int(self.round_idx) * 10 + random.randint(j*2,j*2+1)) % 1000))
+                print('indexes of clients: ' + str(client_indexes))
                 # # sampling clients
-                client_indexes = self.aggregator.client_sampling(self.round_idx, self.args.client_num_in_total,
-                                                                 self.args.client_num_per_round)
+                #client_indexes = self.aggregator.client_sampling(self.round_idx, self.args.client_num_in_total,
+                #                                                 self.args.client_num_per_round)
 
             print("size = %d" % self.size)
             if self.args.is_mobile == 1:
                 print("transform_tensor_to_list")
                 global_model_params = transform_tensor_to_list(global_model_params)
-
             for receiver_id in range(1, self.size):
                 self.send_message_sync_model_to_client(receiver_id, global_model_params,
                                                        client_indexes[receiver_id - 1])
