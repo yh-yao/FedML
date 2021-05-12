@@ -15,6 +15,10 @@ except ImportError:
 
 
 class MyModelTrainer(ModelTrainer):
+    
+    total_epoch = 0 #by yyh
+    time = time.time() #by yyh
+    
     def get_model_params(self):
         return self.model.cpu().state_dict()
 
