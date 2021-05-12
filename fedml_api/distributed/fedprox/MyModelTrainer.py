@@ -4,6 +4,7 @@ import torch
 from torch import nn
 import time # by yyh
 import wandb #by yyh
+import copy
 
 try:
     from fedml_core.trainer.model_trainer import ModelTrainer
