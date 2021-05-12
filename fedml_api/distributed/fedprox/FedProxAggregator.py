@@ -32,6 +32,9 @@ class FedProxAggregator(object):
         self.model_dict = dict()
         self.sample_num_dict = dict()
         self.flag_client_model_uploaded_dict = dict()
+        
+        self.starttime = -1 #add for log train time, by yyh
+        
         for idx in range(self.worker_num):
             self.flag_client_model_uploaded_dict[idx] = False
 
@@ -83,7 +86,7 @@ class FedProxAggregator(object):
         self.set_global_model_params(averaged_params)
 
         end_time = time.time()
-        logging.info("aggregate time cost: %d" % (end_time - start_time))
+        logging.info("aggregate time cost: %f" % (end_time - start_time))
         return averaged_params
 
     def client_sampling(self, round_idx, client_num_in_total, client_num_per_round):
@@ -107,8 +110,9 @@ class FedProxAggregator(object):
             return self.test_global
 
     def test_on_server_for_all_clients(self, round_idx):
-        if self.trainer.test_on_the_server(self.train_data_local_dict, self.test_data_local_dict, self.device, self.args):
-            return
+        
+        if self.starttime == -1: #by yyh
+            self.starttime = time.time()
 
         if round_idx % self.args.frequency_of_the_test == 0 or round_idx == self.args.comm_round - 1:
             logging.info("################test_on_server_for_all_clients : {}".format(round_idx))
@@ -161,3 +165,5 @@ class FedProxAggregator(object):
             wandb.log({"Test/Loss": test_loss, "round": round_idx})
             stats = {'test_acc': test_acc, 'test_loss': test_loss}
             logging.info(stats)
+            
+            wandb.log({"Time": time.time() - self.starttime, "round": round_idx}) #by yyhs

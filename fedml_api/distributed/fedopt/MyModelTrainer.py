@@ -61,6 +61,8 @@ class MyModelTrainer(ModelTrainer):
                 wandb.log({"Train/loss": sum(epoch_loss) / len(epoch_loss), "total epoch": self.total_epoch})
                 
                 wandb.log({"Time": time.time() - self.time, "total epoch": self.total_epoch})
+                
+            self.total_epoch += 1 
 
     def test(self, test_data, device, args):
         model = self.model

@@ -134,6 +134,8 @@ class FedOptAggregator(object):
         return client_indexes
 
     def test_on_all_clients(self, round_idx):
+        if self.starttime == -1:
+            self.starttime = time.time()
         if round_idx % self.args.frequency_of_the_test == 0 or round_idx == self.args.comm_round - 1:
             logging.info("################local_test_on_all_clients : {}".format(round_idx))
             train_num_samples = []
@@ -186,8 +188,7 @@ class FedOptAggregator(object):
 
 
     def test_on_random_test_samples(self, round_idx, sample_num = 10000):
-        if self.starttime == -1:
-            self.starttime = time.time()
+        
 
         if round_idx % self.args.frequency_of_the_test == 0 or round_idx == self.args.comm_round - 1:
             
@@ -216,4 +217,3 @@ class FedOptAggregator(object):
             stats = {'test_acc': test_acc, 'test_loss': test_loss}
             logging.info(stats)
             
-            wandb.log({"Time": time.time() - self.starttime, "round": round_idx})

@@ -97,7 +97,7 @@ class FedAVGAggregator(object):
         return client_indexes
 
     def test_on_server_for_all_clients(self, round_idx):
-        if self.starttime == -1:
+        if self.starttime == -1: #by yyh
             self.starttime = time.time()
         if round_idx % self.args.frequency_of_the_test == 0 or round_idx == self.args.comm_round - 1:
             logging.info("################test_on_server_for_all_clients : {}".format(round_idx))

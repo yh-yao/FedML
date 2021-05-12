@@ -62,7 +62,7 @@ class MyModelTrainer(ModelTrainer):
                 
                 wandb.log({"Time": time.time() - self.time, "total epoch": self.total_epoch}) #by yyh
                 
-            self.total_epoch += 1
+            self.total_epoch += 1 #by yyh
                 
                 
                 
