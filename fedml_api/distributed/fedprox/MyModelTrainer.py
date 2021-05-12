@@ -35,6 +35,9 @@ class MyModelTrainer(ModelTrainer):
             optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()),
                                          lr=args.lr,
                                          weight_decay=args.wd, amsgrad=True)
+            
+        global_state_dict = model.state_dict()
+        
         epoch_loss = []
         for epoch in range(args.epochs):
             batch_loss = []
@@ -44,6 +47,14 @@ class MyModelTrainer(ModelTrainer):
                 optimizer.zero_grad()
                 log_probs = model(x)
                 loss = criterion(log_probs, labels)
+                local_parameters=[]
+                for i in model.parameters():
+                    local_parameters.append(i)
+                l_index=0
+                for key in global_state_dict:
+                        loss += args.mu * torch.linalg.norm(local_parameters[l_index]-global_state_dict[key])**2
+                        l_index+=1
+
                 loss.backward()
                 optimizer.step()
                 batch_loss.append(loss.item())
