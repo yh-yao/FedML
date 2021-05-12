@@ -35,6 +35,9 @@ class FedOptAggregator(object):
         self.opt = OptRepo.name2cls(self.args.server_optimizer)(
             self.get_model_params(), lr=self.args.server_lr
         )
+        
+        self.starttime = -1 #add for log train time, by yyh
+        
         for idx in range(self.worker_num):
             self.flag_client_model_uploaded_dict[idx] = False
 
@@ -101,7 +104,7 @@ class FedOptAggregator(object):
         self.opt.step()
 
         end_time = time.time()
-        logging.info("aggregate time cost: %d" % (end_time - start_time))
+        logging.info("aggregate time cost: %f" % (end_time - start_time))
         return self.get_global_model_params()
 
     def set_model_global_grads(self, new_state):
@@ -178,9 +181,13 @@ class FedOptAggregator(object):
             wandb.log({"Test/Loss": test_loss, "round": round_idx})
             stats = {'test_acc': test_acc, 'test_loss': test_loss}
             logging.info(stats)
+            
+            wandb.log({"Time": time.time() - self.starttime, "round": round_idx}) #by yyh
 
 
     def test_on_random_test_samples(self, round_idx, sample_num = 10000):
+        if self.starttime == -1:
+            self.starttime = time.time()
 
         if round_idx % self.args.frequency_of_the_test == 0 or round_idx == self.args.comm_round - 1:
             
@@ -208,3 +215,5 @@ class FedOptAggregator(object):
             wandb.log({"Test/Loss": test_loss, "round": round_idx})
             stats = {'test_acc': test_acc, 'test_loss': test_loss}
             logging.info(stats)
+            
+            wandb.log({"Time": time.time() - self.starttime, "round": round_idx})

@@ -3,6 +3,9 @@ import logging
 import torch
 from torch import nn
 
+import time # by yyh
+import wandb #by yyh
+
 try:
     from fedml_core.trainer.model_trainer import ModelTrainer
     from fedml_api.standalone.fedopt.optrepo import OptRepo
@@ -51,6 +54,9 @@ class MyModelTrainer(ModelTrainer):
                                                                                               epoch,
                                                                                               sum(epoch_loss) / len(
                                                                                                   epoch_loss)))
+                wandb.log({"Train/loss": sum(epoch_loss) / len(epoch_loss), "total epoch": self.total_epoch})
+                
+                wandb.log({"Time": time.time() - self.time, "total epoch": self.total_epoch})
 
     def test(self, test_data, device, args):
         model = self.model

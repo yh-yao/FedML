@@ -2,8 +2,8 @@ import logging
 
 import torch
 from torch import nn
-import time
-import wandb
+import time # by yyh
+import wandb #by yyh
 
 try:
     from fedml_core.trainer.model_trainer import ModelTrainer
@@ -58,9 +58,9 @@ class MyModelTrainer(ModelTrainer):
                                                                                               epoch,
                                                                                               sum(epoch_loss) / len(
                                                                                                   epoch_loss)))
-                wandb.log({"Train/loss": sum(epoch_loss) / len(epoch_loss), "total epoch": self.total_epoch})
+                wandb.log({"Train/loss": sum(epoch_loss) / len(epoch_loss), "total epoch": self.total_epoch}) #by yyh
                 
-                wandb.log({"Time": time.time() - self.time, "total epoch": self.total_epoch})
+                wandb.log({"Time": time.time() - self.time, "total epoch": self.total_epoch}) #by yyh
                 
             self.total_epoch += 1
                 

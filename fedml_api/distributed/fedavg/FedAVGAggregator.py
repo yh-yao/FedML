@@ -83,7 +83,7 @@ class FedAVGAggregator(object):
         self.set_global_model_params(averaged_params)
 
         end_time = time.time()
-        logging.info("aggregate time cost: %f" % (end_time - start_time))
+        logging.info("aggregate time cost: %f" % (end_time - start_time)) #by yyh
         return averaged_params
 
     def client_sampling(self, round_idx, client_num_in_total, client_num_per_round):
@@ -146,4 +146,4 @@ class FedAVGAggregator(object):
             stats = {'test_acc': test_acc, 'test_loss': test_loss}
             logging.info(stats)
             
-            wandb.log({"Time": time.time() - self.starttime, "round": round_idx})
+            wandb.log({"Time": time.time() - self.starttime, "round": round_idx}) #by yyh
