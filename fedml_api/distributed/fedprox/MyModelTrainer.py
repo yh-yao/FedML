@@ -47,13 +47,11 @@ class MyModelTrainer(ModelTrainer):
                 optimizer.zero_grad()
                 log_probs = model(x)
                 loss = criterion(log_probs, labels)
-                local_parameters=model.parameters()
+                local_parameters=[]
                 for i in model.parameters():
                     local_parameters.append(i)
                 l_index=0
                 for key in global_state_dict:
-                        global_state_dict[key]
-                        local_parameters[int(l_index)]
                         loss += args.mu * torch.norm(local_parameters[int(l_index)]-global_state_dict[key])**2 #for rpi 4 pytorch 1.4.0
                         l_index+=1
 
