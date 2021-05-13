@@ -18,6 +18,7 @@ class MyModelTrainer(ModelTrainer):
     
     total_epoch = 0 #by yyh
     time = time.time() #by yyh
+    compute_time = 0 #new by yyh
     
     def get_model_params(self):
         return self.model.cpu().state_dict()
@@ -34,7 +35,7 @@ class MyModelTrainer(ModelTrainer):
         criterion = nn.CrossEntropyLoss().to(device)
         opt_cls = OptRepo.name2cls(args.client_optimizer)
         optimizer = opt_cls(model.parameters(), lr=args.lr, weight_decay=args.wd)
-
+        current_time = time.time() #new by yyh
         epoch_loss = []
         for epoch in range(args.epochs):
             batch_loss = []
@@ -62,7 +63,12 @@ class MyModelTrainer(ModelTrainer):
                 
                 wandb.log({"Time": time.time() - self.time, "total epoch": self.total_epoch})
                 
+                self.compute_time += time.time() - current_time #new by yyh
+        
+                
             self.total_epoch += 1 
+            self.compute_time += time.time() - current_time #new by yyh
+            wandb.log({"Compute Time": self.compute_time, "total epoch": self.total_epoch}) #new by yyh
 
     def test(self, test_data, device, args):
         model = self.model

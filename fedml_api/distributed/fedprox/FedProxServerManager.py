@@ -15,6 +15,7 @@ except ImportError:
     from FedML.fedml_core.distributed.server.server_manager import ServerManager
 
 import time # by yyh
+import random
 
 class FedProxServerManager(ServerManager):
     def __init__(self, args, aggregator, comm=None, rank=0, size=0, backend="MPI", is_preprocessed=False,

@@ -15,6 +15,7 @@ class MyModelTrainer(ModelTrainer):
     
     total_epoch = 0 #by yyh
     time = time.time() #by yyh
+    compute_time = 0 #new by yyh
     
     def get_model_params(self):
         return self.model.cpu().state_dict()
@@ -37,6 +38,8 @@ class MyModelTrainer(ModelTrainer):
             optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()),
                                          lr=args.lr,
                                          weight_decay=args.wd, amsgrad=True)
+        
+        current_time = time.time() #new by yyh
         epoch_loss = []
         for epoch in range(args.epochs):
             batch_loss = []
@@ -63,7 +66,9 @@ class MyModelTrainer(ModelTrainer):
                 wandb.log({"Time": time.time() - self.time, "total epoch": self.total_epoch}) #by yyh
                 
             self.total_epoch += 1 #by yyh
-                
+        
+        self.compute_time += time.time() - current_time #new by yyh
+        wandb.log({"Compute Time": self.compute_time, "total epoch": self.total_epoch}) #new by yyh
                 
                 
 

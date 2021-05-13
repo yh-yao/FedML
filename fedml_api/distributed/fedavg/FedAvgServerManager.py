@@ -15,6 +15,7 @@ except ImportError:
     from FedML.fedml_core.distributed.server.server_manager import ServerManager
 
 import time # by yyh
+import random
     
 class FedAVGServerManager(ServerManager):
     def __init__(self, args, aggregator, comm=None, rank=0, size=0, backend="MPI", is_preprocessed=False):
@@ -64,9 +65,10 @@ class FedAVGServerManager(ServerManager):
                 print('indexes of clients: ' + str(client_indexes))
             else: #for non-iid
                 client_indexes = []
+                print("start index")
                 for j in range(int(self.args.client_num_per_round)):
-                    
                     client_indexes.append(int((int(self.round_idx) * 10 + random.randint(j*2,j*2+1)) % 1000))
+                print("finish index")
                 print('indexes of clients: ' + str(client_indexes))
                 # # sampling clients
                 #client_indexes = self.aggregator.client_sampling(self.round_idx, self.args.client_num_in_total,
