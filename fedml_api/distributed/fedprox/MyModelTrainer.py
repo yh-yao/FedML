@@ -72,8 +72,8 @@ class MyModelTrainer(ModelTrainer):
                 
                 wandb.log({"Time": time.time() - self.time, "total epoch": self.total_epoch}) #by yyh
             self.total_epoch += 1 #by yyh
-            self.compute_time += time.time() - current_time #new by yyh
-            wandb.log({"Compute Time": self.compute_time, "total epoch": self.total_epoch}) #new by yyh
+        self.compute_time += time.time() - current_time #new by yyh
+        wandb.log({"Compute Time": self.compute_time, "total epoch": self.total_epoch}) #new by yyh
 
     def test(self, test_data, device, args):
         model = self.model
